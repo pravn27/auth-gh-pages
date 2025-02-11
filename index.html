@@ -4,11 +4,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Restricted GitHub Pages</title>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js"></script>
 </head>
 
 <body>
-    <h1>Sample landing page</h1>
+    <h1>Restricted Access</h1>
+    <button id="login">Login with Google</button>
+    <button id="logout" style="display:none;">Logout</button>
+
+    <script>
+        // Your Firebase Config (Replace with your values)
+        const firebaseConfig = {
+            apiKey: "AIzaSyCWpLJqM_HyYvJFIgL7PEok4en-eCkzX4g",
+            authDomain: "auth-gp-b2dee.firebaseapp.com",
+            projectId: "auth-gp-b2dee",
+            storageBucket: "auth-gp-b2dee.firebasestorage.app",
+            messagingSenderId: "950694224139",
+            appId: "1:950694224139:web:3531f110a77cbe9a84820e",
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+
+        const allowedEmails = ["praveen.sri27@gmail.com"]; // Replace with your approved emails
+
+        document.getElementById("login").addEventListener("click", () => {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            auth.signInWithPopup(provider).then(result => {
+                const userEmail = result.user.email;
+                if (allowedEmails.includes(userEmail)) {
+                    alert(`Welcome ${userEmail}`);
+                    document.body.innerHTML += `<p>Access Granted</p>`;
+                    document.getElementById("logout").style.display = "block";
+                } else {
+                    alert("Access Denied!");
+                    auth.signOut();
+                }
+            }).catch(error => console.error(error));
+        });
+
+        document.getElementById("logout").addEventListener("click", () => {
+            auth.signOut().then(() => {
+                alert("Logged out");
+                location.reload();
+            });
+        });
+    </script>
 </body>
 
 </html>
