@@ -5,16 +5,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Restricted GitHub Pages</title>
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js"></script>
-</head>
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js";
 
-<body>
-    <h1>Restricted Access</h1>
-    <button id="login">Login with Google</button>
-    <button id="logout" style="display:none;">Logout</button>
-
-    <script>
         // Your Firebase Config (Replace with your values)
         const firebaseConfig = {
             apiKey: "AIzaSyCWpLJqM_HyYvJFIgL7PEok4en-eCkzX4g",
@@ -26,33 +21,54 @@
         };
 
         // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
 
-        const allowedEmails = ["praveen.sri27@gmail.com"]; // Replace with your approved emails
+        const allowedEmails = ["praveen.sri27@gmail.com"]; // Replace with approved emails
 
-        document.getElementById("login").addEventListener("click", () => {
-            const provider = new firebase.auth.GoogleAuthProvider();
-            auth.signInWithPopup(provider).then(result => {
-                const userEmail = result.user.email;
-                if (allowedEmails.includes(userEmail)) {
-                    alert(`Welcome ${userEmail}`);
-                    document.body.innerHTML += `<p>Access Granted</p>`;
-                    document.getElementById("logout").style.display = "block";
-                } else {
-                    alert("Access Denied!");
-                    auth.signOut();
+        document.addEventListener("DOMContentLoaded", () => {
+            const loginBtn = document.getElementById("login");
+            const logoutBtn = document.getElementById("logout");
+
+            loginBtn.addEventListener("click", () => {
+                signInWithPopup(auth, provider)
+                    .then((result) => {
+                        const userEmail = result.user.email;
+                        if (allowedEmails.includes(userEmail)) {
+                            alert(`Welcome ${userEmail}`);
+                            document.body.innerHTML += `<p>Access Granted</p>`;
+                            logoutBtn.style.display = "block";
+                        } else {
+                            alert("Access Denied!");
+                            signOut(auth);
+                        }
+                    })
+                    .catch(error => console.error(error));
+            });
+
+            logoutBtn.addEventListener("click", () => {
+                signOut(auth).then(() => {
+                    alert("Logged out");
+                    location.reload();
+                });
+            });
+
+            // Automatically check authentication state
+            onAuthStateChanged(auth, (user) => {
+                if (user && allowedEmails.includes(user.email)) {
+                    document.body.innerHTML += `<p>Access Granted for ${user.email}</p>`;
+                    logoutBtn.style.display = "block";
                 }
-            }).catch(error => console.error(error));
-        });
-
-        document.getElementById("logout").addEventListener("click", () => {
-            auth.signOut().then(() => {
-                alert("Logged out");
-                location.reload();
             });
         });
     </script>
+</head>
+
+<body>
+    <h1>Restricted Access</h1>
+    <button id="login">Login with Google</button>
+    <button id="logout" style="display:none;">Logout</button>
 </body>
 
 </html>
